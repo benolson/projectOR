@@ -6,7 +6,12 @@ void mexFunction(int output_size, mxArray *output[], int input_size, const mxArr
     //const IplImage* img = cvCreateImage(cvSize(640,480), IPL_DEPTH_8U, 3);  
     // Allocate output variable
     double *Data;
-    output[0] = mxCreateDoubleMatrix(img->height, img->width, mxREAL);
+   mwSize* dims = (mwSize *) mxMalloc (3 * sizeof(mwSize));
+    dims[0] = img->height;
+    dims[1] = img->width;
+    dims[2] = 3;
+    output[0] = mxCreateNumericArray (3, dims, mxDOUBLE_CLASS, mxREAL);
+    //output[0] = mxCreateDoubleMatrix(img->height, img->width, mxREAL);
     Data = mxGetPr(output[0]); // Get the pointer to output variable
     
     int height     = img->height;
@@ -15,8 +20,10 @@ void mexFunction(int output_size, mxArray *output[], int input_size, const mxArr
     int channels   = img->nChannels;
     uchar* data    = (uchar *)img->imageData;
     for(int i=0; i<img->height; i++) {
-        for(int j=0; j<img->width; j++) {           
-            Data[i+j*(img->height)] = data[i*step+j*channels+1];
+        for(int j=0; j<img->width; j++) {
+            for(int k=0; k<3; k++) {
+                Data[i+j*(img->height)] = data[i*step+j*channels+k];
+            }
         }
     }
         
