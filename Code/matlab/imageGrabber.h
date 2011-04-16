@@ -2,6 +2,8 @@
 
 // OpenCV includes
 #include "mex.h"
+
+// OpenCV includes
 #include "cv.h"
 #include "highgui.h"
 

@@ -86,7 +86,9 @@ const IplImage* ImageGrabberGetCameraImage()
 {
   // Allocate the memory storage for calculations and frame data
   CvMemStorage* storage = cvCreateMemStorage(0);
-  CvCapture* capture = cvCaptureFromCAM(0);
+  CvCapture* capture = cvCreateCameraCapture(0);
+  cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH, 960 );
+  cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT, 720 );
   // Images to capture the frame from video or camera or from file
   IplImage *frame = 0;
   IplImage *frame_copy = 0;
