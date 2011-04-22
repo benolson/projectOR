@@ -1,0 +1,14 @@
+cal1 = imread('cal1.png');
+cal2 = imread('cal2.png');
+fullscreen(cal2,2)
+camImage = imageGrabberMex()/255.;
+imshow(camImage);
+fullscreen(cal1,2)
+camImageBlack = imageGrabberMex()/255.;
+%imshow(camImage-camImageBlack);
+diff = camImage - camImageBlack;
+
+rdiff = diff(:,:,1);
+gdiff = diff(:,:,2);
+bdiff = diff(:,:,3);
+

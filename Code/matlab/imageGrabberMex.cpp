@@ -20,10 +20,10 @@ void mexFunction(int output_size, mxArray *output[], int input_size, const mxArr
     int channels   = img->nChannels;
     uchar* data    = (uchar *)img->imageData;
     for(int i=0; i<img->height; i++) {
-        for(int j=0; j<img->width; j++) {
-            for(int k=0; k<3; k++) {
-                Data[i+j*(img->height)] = data[i*step+j*channels+k];
-            }
+        for(int j=0; j<img->width; j++) {            
+                Data[0*img->height*img->width+j*img->height+i] = data[i*step+j*channels+2];
+                Data[1*img->height*img->width+j*img->height+i] = data[i*step+j*channels+1];
+                Data[2*img->height*img->width+j*img->height+i] = data[i*step+j*channels+0];            
         }
     }
         
@@ -94,8 +94,10 @@ const IplImage* ImageGrabberGetCameraImage()
   // Allocate the memory storage for calculations and frame data
   CvMemStorage* storage = cvCreateMemStorage(0);
   CvCapture* capture = cvCreateCameraCapture(0);
-  cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH, 960 );
-  cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT, 720 );
+  //cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH, 960 );
+  //cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT, 720 );
+  cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH, 640 );
+  cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT, 480 );
   // Images to capture the frame from video or camera or from file
   IplImage *frame = 0;
   IplImage *frame_copy = 0;
