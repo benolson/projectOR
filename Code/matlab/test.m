@@ -1,9 +1,10 @@
+system('grabScreenshotAndCamerashot.exe');
 cal1 = imread('cal1.png');
 cal2 = imread('cal2.png');
-fullscreen(cal2,2)
-camImage = takePicture();
-fullscreen(cal1,2)
-camImageBlack = takePicture();
+fullscreen(cal2,2);
+[camImage screenImage] = grabScreenshotAndCamerashot();
+fullscreen(cal1,2);
+[camImageBlack screenImage] = grabScreenshotAndCamerashot();
 
 %imshow(camImage-camImageBlack);
 diff = camImage - camImageBlack;

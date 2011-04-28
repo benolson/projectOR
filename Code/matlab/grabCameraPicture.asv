@@ -1,0 +1,5 @@
+function [camImg screenImg] = grabScreenshotAndCamerashot()
+textFile = fopen('imageGrabber.txt', 'w');
+img = imread('cameraShot.jpg');
+cameraImage = im2double((imread('screenshot.jpg')));
+end

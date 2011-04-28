@@ -1,9 +1,10 @@
+system('grabScreenshotAndCamerashot.exe');
 cal1 = imread('cal1.png');
 cal2 = imread('cal2.png');
-fullscreen(cal2,2)
-camImage = takePicture();
-fullscreen(cal1,2)
-camImageBlack = takePicture();
+fullscreen(cal2,2);
+[camImage ] = grabScreenshotAndCamerashot();
+fullscreen(cal1,2);
+[camImageBlack ] = grabScreenshotAndCamerashot();
 
 %imshow(camImage-camImageBlack);
 diff = camImage - camImageBlack;
@@ -11,11 +12,11 @@ diff = camImage - camImageBlack;
 h = fspecial('gaussian',10,10);
 diff=imfilter(diff,h);
 
-%rdiff = diff(:,:,1);
-%gdiff = diff(:,:,2);
-%bdiff = diff(:,:,3);
+rdiff = diff(:,:,1);
+gdiff = diff(:,:,2);
+bdiff = diff(:,:,3);
 
-%meandiff = mean(diff,3);
+meandiff = mean(diff,3);
 
 %[dummy, rmax] = max(rdiff(:) - meandiff(:));
 h = size(diff, 1);
@@ -34,10 +35,12 @@ else
     d = meandiff;
 end
 for count = 1:4
+    imshow(d);
+    pause;
     [dummy, rmax] = max(d(:));
 	[r c] = ind2sub(size(diff), rmax);
-	rr = max(1,r-15):min(w,r+15);
-	cr = max(1,c-15):min(h,c+15);
+	rr = max(1,r-25):min(w,r+25);
+	cr = max(1,c-25):min(h,c+25);
 	d(rr,cr) = 0;
 	cand = [cand; r c];
 end
@@ -76,12 +79,12 @@ pause;
                   
 %    basepoints = c*[0 0; 0 1280; 800 1280; 800 0];
 
-    basepoints = [basepoints(:,2); basepoints(:,1)]
-    pts = [basepoints(:,2); basepoints(:,1)]
+    basepoints = [basepoints(:,2) basepoints(:,1)];
+    pts = [pts(:,2) pts(:,1)];
     tform = findHomography(basepoints,pts);
     dogImage = imread('im.jpg');
     transformedImage = imtransform(dogImage,tform,'FillValues',0.0);
-    %fullscreen(transformedImage,2);
-    imshow(transformedImage);
+    fullscreen(transformedImage,2);
+    %imshow(transformedImage);
     
 %imshow(transformedImage);
