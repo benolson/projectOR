@@ -1,4 +1,4 @@
 function startCamera()
-system('grabScreenshots&');
+system('grabScreenshots 800 600 1&');
 end
 
