@@ -27,18 +27,18 @@ ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
 gds = ge.getScreenDevices();
 height = gds(device_number).getDisplayMode().getHeight();
 width = gds(device_number).getDisplayMode().getWidth();
-size(image)
-image = padarray(image, [3072 4096]);
+
+%image = padarray(image, [3072 4096]);
 
 hpad = width;
 vpad = height;
 hpad = floor(hpad/2);
 vpad = floor(vpad/2);
 
-r = size(image,1)/2
-c = size(image,2)/2
-image = imresize(image(r-(vpad-1):r+vpad, c-(hpad-1):c+hpad), [height width]);
-%image = imresize(image, [height width]);
+r = size(image,1)/2;
+c = size(image,2)/2;
+%image = imresize(image(r-(vpad-1):r+vpad, c-(hpad-1):c+hpad), [height width]);
+image = imresize(image, [height width]);
 if ~isequal(size(image,1),height)
     error(['Image must have verticle resolution of ' num2str(height)]);
 elseif ~isequal(size(image,2),width)

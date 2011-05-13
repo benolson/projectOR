@@ -1,0 +1,2 @@
+function z = clamp(x,y)
+  z = max(min(round(x-1), y),1):max(min(round(x), y),1)+2;

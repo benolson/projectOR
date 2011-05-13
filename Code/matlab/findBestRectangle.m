@@ -1,0 +1,23 @@
+function [ output_args ] = findBestRectangle(upperLeft upperRight lowerRight lowerLeft targetAspectRatio)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+
+if (lowerLeft(2) > lowerRight(2))
+    bottomCoordinate = lowerLeft;
+else
+    bottomCoordinate = lowerRight;
+end
+
+if (upperLeft(2) < upperRight(2))
+    topCoordinate = upperLeft;
+else
+    topCoordinate = upperRight;
+end
+
+for i=1:(bottomCoordinate(1)-topCoordinate(1))
+    
+end
+
+
+end
+

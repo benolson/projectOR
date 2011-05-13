@@ -19,7 +19,7 @@ end
 
 
 for i=1:size(locations,1)
-    img = draw_circle(img,locations(i,1),locations(i,2),12,colors(i,:));
+    img = draw_circle(img,locations(i,1),locations(i,2),24,colors(i,:));
 end
 
 

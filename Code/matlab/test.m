@@ -136,26 +136,33 @@ imshow(camImageBlack/255.);
     
     pts = [pts(:,2) pts(:,1)];
     
-    scaler = 984 / (max(pts(:,1)) - min(pts(:,1)))    
-    scalec = 728 / (max(pts(:,2)) - min(pts(:,2)))
+    scaler = 1024/800 %984 / (max(pts(:,1)) - min(pts(:,1)))    
+    scalec = 768/600%728 / (max(pts(:,2)) - min(pts(:,2)))
 
     
     
     
     pts(:,1) = pts(:,1) * scaler;
     pts(:,2) = pts(:,2) * scalec;
+
+    img_scale_x = max([mean(pts(:,1) - min(pts(:,1))) ...
+                    max(pts(:,1) - mean(pts(:,1)))])/1024
+    img_scale_y = max([mean(proj_pts(:,2) - min(proj_pts(:,2))) ...
+                    max(proj_pts(:,2) - mean(proj_pts(:,2)))])/768
+    basepoints = basepoints*min(img_scale_x,img_scale_y);
     
 %    for scalefactor = 1.5:.1:2.5
     
     %[tform, H] = findHomography(basepoints, pts);
     
-    
-    [tform, H2] = findHomography(pts, basepoints);
+    tform = cp2tform(pts, basepoints, 'projective');
+
+    %[tform, H2] = findHomography(pts, basepoints);
    
     dogImage = imread('im.png');
-    Hf = H2^(-1);
+    %Hf = H2^(-1);
     pads=0;
-    while true
+    while false
         corners = zeros(4,3);
         corners(1,:) = Hf*[-383+pads*30 -511+pads*40 1]';
         corners(2,:) = Hf*[-383+pads*30 512-pads*40 1]';
