@@ -14,10 +14,17 @@ LIBS += -LC:\OpenCV2.1\lib -lcv210 -l cxcore210 -lcvaux210 -lhighgui210
 INCLUDEPATH += "C:\OpenCV2.1\include\opencv"
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
     glwidget.cpp \
-    imageGrabber.cpp
+    imageGrabber.cpp \
+    screenshot.cpp \
+    screengrabber.cpp \
+    geometriccalibration.cpp \
+    vector2.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += \
     glwidget.h \
-    imageGrabber.h
+    imageGrabber.h \
+    screengrabber.h \
+    screenshot.h \
+    geometriccalibration.h \
+    vector2.h

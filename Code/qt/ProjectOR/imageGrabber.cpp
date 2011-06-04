@@ -1,9 +1,10 @@
 #include "imageGrabber.h"
+#include <QImage>
 #include <windows.h>
 #include <fstream>
 #include <iostream>
 
-void ImageGrabberStartLoop(int imageWidth, int imageHeight, IplImage** image)
+void ImageGrabberStartLoop(int imageWidth, int imageHeight, IplImage** image, QMutex* cameraLock)
 {
     // Images to capture the frame from video or camera or from file
     CvCapture* capture = cvCaptureFromCAM(CV_CAP_ANY);
@@ -11,9 +12,26 @@ void ImageGrabberStartLoop(int imageWidth, int imageHeight, IplImage** image)
     // If loaded succesfully, then:
     if( capture )
     {        
+        unsigned long iterations = 0;
         // Capture from the camera.
         while (1)
         {
+            // check to exit
+            if (iterations % 20 == 0)
+            {
+                char buffer[8];
+                std::ifstream f("shutDownThread.bin", std::ios::binary);
+                f.read(buffer,1);
+                f.close();
+                // Release the images, and capture memory
+                if (buffer[0] != '0')
+                {
+                    cvReleaseCapture( &capture);
+                    return;
+                }
+            }
+
+            cameraLock->lock();
             *image = cvQueryFrame(capture);
 
             // If the frame does not exist, quit the loop
@@ -21,112 +39,60 @@ void ImageGrabberStartLoop(int imageWidth, int imageHeight, IplImage** image)
                 break;
             cvFlip(*image, 0, 0 );
             cvCvtColor(*image,*image,CV_BGR2RGB);
+            cameraLock->unlock();
             //cvSaveImage(fileName, frame);
+            Sleep(60);
+            iterations++;
         }
     }			
 
-    // Release the images, and capture memory
-    cvReleaseCapture( &capture );
+
 }
 
-const IplImage* ImageGrabberGetCameraImage()
+///////////////////////////////////// ImageGrabber //////////////////////////////////////////////
+
+ImageGrabber::ImageGrabber(IplImage** image, QMutex* cameraLock, QObject* parent)
+    : QObject(parent)
 {
-    // Allocate the memory storage for calculations and frame data
-    CvMemStorage* storage = cvCreateMemStorage(0);
-    CvCapture* capture = cvCaptureFromCAM(0);
-    // Images to capture the frame from video or camera or from file
-    IplImage *frame = 0;
-    IplImage *frame_copy = 0;
-    // If loaded succesfully, then:
-    if( capture )
-    {
-        // Capture the frame and load it in IplImage
-        if( !cvGrabFrame( capture ))
-        {
-            // Release the images, and capture memory
-            cvReleaseCapture( &capture );
-            return 0;
-        }
-        frame = cvRetrieveFrame( capture );
-
-        // If the frame does not exist, quit
-        if( !frame )
-        {
-            // Release the images, and capture memory
-            cvReleaseCapture( &capture );
-            return 0;
-        }
-
-        // Allocate framecopy as the same size of the frame
-        if( !frame_copy )
-            frame_copy = cvCreateImage( cvSize(frame->width,frame->height),
-                                        IPL_DEPTH_8U, frame->nChannels );
-
-        // Check the origin of image. If top left, copy the image frame to frame_copy.
-        if( frame->origin == IPL_ORIGIN_TL )
-            cvCopy( frame, frame_copy, 0 );
-        // Else flip and copy the image
-        else
-            cvFlip( frame, frame_copy, 0 );
-
-        // Release the capture but not the image
-        cvReleaseCapture( &capture );
-        // return final image
-        return frame_copy;
-    }
-
-    // Release the images, and capture memory
-    cvReleaseCapture( &capture );
-    cvReleaseImage( &frame_copy );
-    return 0;
+    m_image = image;
+    m_cameraLock = cameraLock;
 }
 
-void ImageGrabberTakeScreenshot(const char* fileName, int imageWidth, int imageHeight)
+void ImageGrabber::saveCameraImage(Image& image)
 {
-    // Allocate the memory storage for calculations and frame data
-    CvMemStorage* storage = cvCreateMemStorage(0);
-    CvCapture* capture = cvCreateCameraCapture(0);
-    cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH, imageWidth );
-    cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT, imageHeight );
-    // Images to capture the frame from video or camera or from file
-    IplImage *frame = 0;
-    IplImage *frame_copy = 0;
-    // If loaded succesfully, then:
-    if( capture )
-    {
-        // Capture the frame and load it in IplImage
-        if( !cvGrabFrame( capture ))
-        {
-            // Release the images, and capture memory
-            cvReleaseCapture( &capture );
-            return;
-        }
-        frame = cvRetrieveFrame( capture );
+    image.width = width();
+    image.height = height();
+    image.data = new char[3*image.width*image.height];
+    lockCamera();
+    memcpy(image.data, (*m_image)->imageData, image.width*image.height*3);
+    unlockCamera();
+}
 
-        // If the frame does not exist, quit
-        if( !frame )
-        {
-            // Release the images, and capture memory
-            cvReleaseCapture( &capture );
-            return;
-        }
+IplImage* ImageGrabber::saveCameraImageIplImage()
+{
+    IplImage* out = cvCreateImage(cvSize(width(),height()), IPL_DEPTH_8U, 1);
+    lockCamera();
+    cvCvtColor(*m_image, out, CV_RGB2GRAY);
+    unlockCamera();
+    return out;
+}
 
-        // Allocate framecopy as the same size of the frame
-        if( !frame_copy )
-            frame_copy = cvCreateImage( cvSize(frame->width,frame->height),
-                                        IPL_DEPTH_8U, frame->nChannels );
+void ImageGrabber::saveCameraImageToDisk()
+{
+    lockCamera();
+    cvFlip(*m_image, 0, 0 );
+    cvSaveImage("cameraScreenshot.png", *m_image);
+    cvFlip(*m_image, 0, 0 );
+    unlockCamera();
+}
 
-        // Check the origin of image. If top left, copy the image frame to frame_copy.
-        if( frame->origin == IPL_ORIGIN_TL )
-            cvCopy( frame, frame_copy, 0 );
-        // Else flip and copy the image
-        else
-            cvFlip( frame, frame_copy, 0 );
-        cvSaveImage(fileName, frame_copy);
-    }
+void ImageGrabber::saveImageToDisk(Image& img, char* fileName)
+{
+    QImage qIMG((unsigned char*)img.data, img.width, img.height, QImage::Format_RGB888);
+    qIMG.save(fileName, QString("png").toAscii());
+}
 
-    // Release the images, and capture memory
-    cvReleaseCapture( &capture );
-    cvReleaseImage( &frame_copy );
-    return;
+void ImageGrabber::saveImageToDiskIplImage(IplImage* img, char* fileName)
+{
+    cvSaveImage(fileName, img);
 }

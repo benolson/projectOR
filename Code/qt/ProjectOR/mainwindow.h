@@ -2,12 +2,9 @@
 #define WINDOW_H
 
 #include <QWidget>
+#include <QMutex>
 #include <cv.h>
 
-QT_BEGIN_NAMESPACE
-class QSlider;
-QT_END_NAMESPACE
-//! [0]
 class GLWidget;
 
 class Window : public QWidget
@@ -15,19 +12,14 @@ class Window : public QWidget
     Q_OBJECT
 
 public:
-    Window(IplImage** image);
+    Window(IplImage** image, QMutex* cameraLock);
 
 protected:
     void keyPressEvent(QKeyEvent *event);
 
 private:
-    QSlider *createSlider();
-
+    IplImage** m_image;
     GLWidget *glWidget;
-    QSlider *xSlider;
-    QSlider *ySlider;
-    QSlider *zSlider;
 };
-//! [0]
 
 #endif
